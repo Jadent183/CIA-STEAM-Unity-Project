@@ -25,14 +25,22 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         wallLayerMask = LayerMask.GetMask("MazeWalls");
+        currentDirection = -transform.up;
     }
 
     void Update()
     {
         MeasureDistances();
-        //next two lines is current attempt at using DetermineDirection, however currentDirection is showing up as the 0 vector, which is calling the initialization case of DetermineDirection
-        currentDirection = DetermineDirection(currentDirection, leftWallDistance, rightWallDistance, upWallDistance, downWallDistance) * moveSpeed * Time.deltaTime;
-        transform.position += currentDirection;
+
+        // Check if there's an obstacle in the current direction
+        if (Physics2D.Raycast(transform.position, currentDirection, 0.1f, wallLayerMask))
+        {
+            // Recalculate direction if an obstacle is near
+            currentDirection = DetermineDirection(currentDirection, leftWallDistance, rightWallDistance, upWallDistance, downWallDistance);
+        }
+
+        // Move continuously in the current direction
+        transform.position += currentDirection * moveSpeed * Time.deltaTime;
     }
 
     // Measure the distance to walls in all 4 cardinal directions
@@ -103,100 +111,32 @@ public class PlayerMovement : MonoBehaviour
 
     Vector3 DetermineDirection(Vector3 currentDirection, float lDist, float rDist, float uDist, float dDist)
     {
-        //object is currently in motion, keep going the same direction unless a new direction is found
-        if(currentDirection.magnitude >= .001f)
+        Debug.Log("current inputs" + lDist + " , " + rDist + " , " + uDist +  " , " + dDist);
+        // Check perpendicular distances based on the current direction
+        if (currentDirection == transform.right) // Moving right, check up and down
         {
-            //current direction is left, check up and down to see if there is a longer distance
-            if(currentDirection == -transform.right)
-            {
-                if(upWallDistance > leftWallDistance)
-                {
-                    return transform.up;
-                }
-                else if(downWallDistance > leftWallDistance)
-                {
-                    return -transform.up;
-                }
-                else
-                {
-                    return -transform.right;
-                }
-            }
-            //current direction is right, check up and down to see if there is a longer distance
-            if (currentDirection == transform.right)
-            {
-                if (upWallDistance > rightWallDistance)
-                {
-                    return transform.up;
-                }
-                else if (downWallDistance > rightWallDistance)
-                {
-                    return -transform.up;
-                }
-                else
-                {
-                    return transform.right;
-                }
-            }
-            //current direction is up, check right and left to see if there is a longer distance
-            if (currentDirection == transform.up)
-            {
-                if (rightWallDistance > upWallDistance)
-                {
-                    return transform.right;
-                }
-                else if (leftWallDistance > upWallDistance)
-                {
-                    return -transform.right;
-                }
-                else
-                {
-                    return transform.up;
-                }
-            }
-            //current direction is down, check right and left to see if there is a longer distance
-            if (currentDirection == -transform.up)
-            {
-                if (rightWallDistance > downWallDistance)
-                {
-                    return transform.right;
-                }
-                else if (leftWallDistance > downWallDistance)
-                {
-                    return -transform.right;
-                }
-                else
-                {
-                    return -transform.up;
-                }
-            }
+            if (uDist > rDist && uDist > dDist) return transform.up;    // Prefer up if it has a longer distance
+            if (dDist > rDist && dDist > uDist) return -transform.up;   // Prefer down if it has a longer distance
         }
-        //object is not currently moving, find longest hallway and go that way THIS IS TRUE EVERY TIME
-        else
+        else if (currentDirection == -transform.right) // Moving left, check up and down
         {
-            //left is longest direction, go that way
-            if(lDist > rDist && lDist > uDist && lDist > dDist)
-            {
-                return -transform.right;
-            }
-            //right is longest direction, go that way
-            else if (rDist > lDist && rDist > uDist && rDist > dDist)
-            {
-                return transform.right;
-            }
-            //up is longest direction, go that way
-            else if (uDist > rDist && uDist > lDist && uDist > dDist)
-            {
-                return transform.up;
-            }
-            //down is longest direction, go that way
-            else if (dDist > rDist && dDist > uDist && dDist > lDist)
-            {
-                return -transform.up;
-            }
-            return Vector3.zero;
+            if (uDist > lDist && uDist > dDist) return transform.up;    // Prefer up if it has a longer distance
+            if (dDist > lDist && dDist > uDist) return -transform.up;   // Prefer down if it has a longer distance
         }
-        return Vector3.zero;
+        else if (currentDirection == transform.up) // Moving up, check right and left
+        {
+            if (lDist > uDist && lDist > rDist) return -transform.right; // Prefer left if it has a longer distance
+            if (rDist > uDist && rDist > lDist) return transform.right;  // Prefer right if it has a longer distance
+        }
+        else if (currentDirection == -transform.up) // Moving down, check right and left
+        {
+            if (lDist > dDist && lDist > rDist) return -transform.right; // Prefer left if it has a longer distance
+            if (rDist > dDist && rDist > lDist) return transform.right;  // Prefer right if it has a longer distance
+        }
+
+        // If no perpendicular direction has a longer distance, continue in the current direction
+        return currentDirection;
+
     }
 
     // Draw the raycasts for visualization in the Unity Editor
