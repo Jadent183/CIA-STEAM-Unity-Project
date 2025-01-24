@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class WallDetector : MonoBehaviour
@@ -33,6 +34,7 @@ public class WallDetector : MonoBehaviour
     private DirectionalHit southHit;
     private DirectionalHit eastHit;
     private DirectionalHit westHit;
+    private DirectionalHit longestDirectionHit;
 
     private void Start()
     {
@@ -111,6 +113,9 @@ public class WallDetector : MonoBehaviour
         ResetDirectionalHit(eastHit);
         ResetDirectionalHit(westHit);
 
+        Debug.Log("Hello there!");
+        Debug.Log(northHit + " Down: " + southHit);
+
         // Cast rays and log results for each direction
         CastDirectionalRay(Vector2.up, northHit, "North");
         CastDirectionalRay(Vector2.down, southHit, "South");
@@ -179,10 +184,42 @@ public class WallDetector : MonoBehaviour
 
     private void DrawLines()
     {
+        // Find the longest direction first
+        FindLongestDirection();
+        
+        // Draw all lines with appropriate colors
         DrawDirectionalLines(northHit);
         DrawDirectionalLines(southHit);
         DrawDirectionalLines(eastHit);
         DrawDirectionalLines(westHit);
+    }
+
+    private void FindLongestDirection()
+    {
+        float maxDistance = 0f;
+        longestDirectionHit = null;
+
+        // Check each direction to find the longest
+        if (northHit.hasClosestHit && northHit.closestDistance > maxDistance)
+        {
+            maxDistance = northHit.closestDistance;
+            longestDirectionHit = northHit;
+        }
+        if (southHit.hasClosestHit && southHit.closestDistance > maxDistance)
+        {
+            maxDistance = southHit.closestDistance;
+            longestDirectionHit = southHit;
+        }
+        if (eastHit.hasClosestHit && eastHit.closestDistance > maxDistance)
+        {
+            maxDistance = eastHit.closestDistance;
+            longestDirectionHit = eastHit;
+        }
+        if (westHit.hasClosestHit && westHit.closestDistance > maxDistance)
+        {
+            maxDistance = westHit.closestDistance;
+            longestDirectionHit = westHit;
+        }
     }
 
     private void DrawDirectionalLines(DirectionalHit hit)
@@ -192,6 +229,18 @@ public class WallDetector : MonoBehaviour
             hit.closestLine.enabled = true;
             hit.closestLine.SetPosition(0, transform.position);
             hit.closestLine.SetPosition(1, hit.closestPoint);
+            
+            // Set color based on whether this is the longest direction
+            if (hit == longestDirectionHit)
+            {
+                hit.closestLine.startColor = furthestLineColor;
+                hit.closestLine.endColor = furthestLineColor;
+            }
+            else
+            {
+                hit.closestLine.startColor = closestLineColor;
+                hit.closestLine.endColor = closestLineColor;
+            }
         }
         else if (hit.closestLine != null)
         {
