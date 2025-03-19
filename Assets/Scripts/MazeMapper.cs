@@ -6,17 +6,16 @@ using UnityEngine;
 // Struct to store node data
 public struct MapNode
 {
-    public bool upOpen;
-    public bool downOpen;
-    public bool leftOpen;
-    public bool rightOpen;
+    public string mapDeadEnd;
+    public string mapCompleted;
+    public string mapUnexplored;
+    public string mapWIP;
     public Vector3 position;
     public int nodeID;
     public List<MapNode> connections;
 }
 public class MazeMapper : MonoBehaviour
 {
-
     private class DirectionalHit
     {
         public bool hasHit;
@@ -35,11 +34,12 @@ public class MazeMapper : MonoBehaviour
 
     private LayerMask wallLayer;
 
+    private Dictionary<string,DirectionalHit> hitTable = new Dictionary<string,DirectionalHit>();
     private DirectionalHit northHit;
     private DirectionalHit southHit;
     private DirectionalHit eastHit;
     private DirectionalHit westHit;
-
+    
     // Dictionary stores all nodes
     private Dictionary<Vector3, MapNode> nodes = new Dictionary<Vector3, MapNode>();
 
@@ -61,7 +61,10 @@ public class MazeMapper : MonoBehaviour
         southHit = InitializeDirectionalHit("South");
         eastHit = InitializeDirectionalHit("East");
         westHit = InitializeDirectionalHit("West");
-
+        hitTable.Add("N",northHit);
+        hitTable.Add("S",southHit);
+        hitTable.Add("E",eastHit);
+        hitTable.Add("W",westHit);
     }
 
     private DirectionalHit InitializeDirectionalHit(string direction)
@@ -117,18 +120,22 @@ public class MazeMapper : MonoBehaviour
                 node.nodeID = nodeID;
                 node.connections = new List<MapNode>();
                 nodeID++;
-                node.upOpen = northHit.hitDistance > wallThreshold;
-                node.downOpen = southHit.hitDistance > wallThreshold;
-                node.leftOpen = westHit.hitDistance > wallThreshold;
-                node.rightOpen = eastHit.hitDistance > wallThreshold;
+                node.mapDeadEnd = "";
+                node.mapUnexplored = "";
+                foreach (KeyValuePair<string,DirectionalHit> kvp in hitTable) {
+                    if (kvp.Value.hitDistance < wallThreshold) {
+                        node.mapDeadEnd += kvp.Key;
+                    }
+                    else {
+                        node.mapUnexplored += kvp.Key;
+                    }
+                }
+                
                 nodes.Add(node.position, node);
                 Debug.Log($"Rover at {position}");
                 Debug.Log($"Node added at {node.position}");
                 Debug.Log($"Node ID: {node.nodeID}");
-                Debug.Log($"Up: {node.upOpen}");
-                Debug.Log($"Down: {node.downOpen}");
-                Debug.Log($"Left: {node.leftOpen}");
-                Debug.Log($"Right: {node.rightOpen}");
+                Debug.Log("Node open in:" + node.mapUnexplored);
                 drawNodes(node);
             }
         } 
@@ -249,8 +256,7 @@ public class MazeMapper : MonoBehaviour
     {
         int maxDistance = 10; // Limit for how far to search for neighbors
         // Check if node other node exists along open direction
-        if (node.upOpen)
-        {
+        if (node.mapUnexplored.Contains("N")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 up = new Vector3(node.position.x, node.position.y + (i * gridSize), 0);
@@ -262,8 +268,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.downOpen)
-        {
+        if (node.mapUnexplored.Contains("S")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 down = new Vector3(node.position.x, node.position.y - (i * gridSize), 0);
@@ -275,8 +280,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.leftOpen)
-        {
+        if (node.mapUnexplored.Contains("W")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 left = new Vector3(node.position.x - (i * gridSize), node.position.y, 0);
@@ -288,8 +292,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.rightOpen)
-        {
+        if (node.mapUnexplored.Contains("E")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 right = new Vector3(node.position.x + (i * gridSize), node.position.y, 0);
@@ -321,6 +324,4 @@ public class MazeMapper : MonoBehaviour
             lr.enabled = true;
         }
     }
-
-
 }
