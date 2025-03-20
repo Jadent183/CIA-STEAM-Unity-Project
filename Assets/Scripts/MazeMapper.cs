@@ -30,11 +30,11 @@ public struct MapNode
     public int nodeID;
     public List<MapNode> connections;
 }
+
 public class MazeMapper : MonoBehaviour
 {   
     // Dictionary stores all nodes
     private Dictionary<Vector3, MapNode> nodes = new Dictionary<Vector3, MapNode>();
-
     // Put the position into normalized grid
     private Vector3 SnapToGrid(Vector3 pos)
     {
@@ -48,50 +48,72 @@ public class MazeMapper : MonoBehaviour
 
     }
 
-
-
     // int that tracks the number of nodes/ids
     private int nodeID = 0;
 
-
     // Check for valid node position and add to dictionary
-    public void AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable, String name)
+    public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable, String name, string direction)
     {
         // Check if postion is already in dictionary by position
-        if (nodes.ContainsKey(SnapToGrid(position)))
+        position = SnapToGrid(position);
+        if (nodes.ContainsKey(position) != true)
         {
-            // Debug.Log("Node already exists at this position.");
-                
-            return;
-        }
-        // Check if directions/position are valid to place a node
-
-        Debug.Log(name + ": Creating Node: " + position);
-        MapNode node = new MapNode();
-        node.position = SnapToGrid(position);
-        node.nodeID = nodeID;
-        node.connections = new List<MapNode>();
-        nodeID++;
-        node.mapDeadEnd = "";
-        node.mapUnexplored = "";
-        foreach (KeyValuePair<string,DirectionalHit> kvp in hitTable) {
-            if (kvp.Value.hitDistance < Globals.wallThreshold) {
-                node.mapDeadEnd += kvp.Key;
+            Debug.Log(name + ": Creating Node: " + position);
+            MapNode node = new MapNode();
+            node.position = SnapToGrid(position);
+            node.nodeID = nodeID;
+            node.connections = new List<MapNode>();
+            nodeID++;
+            node.mapDeadEnd = "";
+            node.mapUnexplored = "";
+            node.mapWIP = "";
+            node.mapCompleted = "";
+            foreach (KeyValuePair<string,DirectionalHit> kvp in hitTable) {
+                if (kvp.Value.hitDistance < Globals.wallThreshold) {
+                    node.mapDeadEnd += kvp.Key;
+                }
+                else {
+                    node.mapUnexplored += kvp.Key;
+                }
             }
-            else {
-                node.mapUnexplored += kvp.Key;
+            if (node.mapUnexplored.Length + node.mapWIP.Length > 1) {
+                if (nodeID == 1) {
+                    node.mapDeadEnd += direction;
+                }
+                else {
+                    node.mapWIP += direction;
+                }
+                node.mapUnexplored = node.mapUnexplored.Replace(direction, String.Empty);
             }
-        }
-        
-        nodes.Add(node.position, node);
-        Debug.Log($"Rover at {position}");
-        Debug.Log($"Node added at {node.position}");
-        Debug.Log($"Node ID: {node.nodeID}");
-        Debug.Log("Node open in:" + node.mapUnexplored);
-        drawNodes(node);
             
-         
-
+            Debug.Log("Node Unexplored: " + node.mapUnexplored);
+            Debug.Log("Node WIP: " + node.mapWIP);
+            drawNodes(node);
+            nodes.Add(node.position, node);
+        }
+        char returnValue = ' ';
+        if (nodes[position].mapUnexplored.Length > 0) {
+            returnValue = nodes[position].mapUnexplored[0];
+            MapNode tempNode = nodes[position];
+            tempNode.mapUnexplored = tempNode.mapUnexplored.Substring(1);
+            tempNode.mapWIP += returnValue;
+            nodes[position] = tempNode;
+        }
+        else if (nodes[position].mapWIP.Length > 0) {
+            returnValue = nodes[position].mapWIP[0];
+            MapNode tempNode = nodes[position];
+            tempNode.mapWIP = tempNode.mapWIP.Substring(1);
+            tempNode.mapWIP += returnValue;
+            nodes[position] = tempNode;
+        }
+        else if (nodes[position].mapCompleted.Length > 0) {
+            returnValue = nodes[position].mapCompleted[0];
+            MapNode tempNode = nodes[position];
+            tempNode.mapCompleted = tempNode.mapCompleted.Substring(1);
+            tempNode.mapCompleted += returnValue;
+            nodes[position] = tempNode;
+        }
+        return returnValue;
     }
 
     // Update is called once per frame
@@ -133,7 +155,7 @@ public class MazeMapper : MonoBehaviour
     {
         int maxDistance = 10; // Limit for how far to search for neighbors
         // Check if node other node exists along open direction
-        if (node.mapUnexplored.Contains("N")) {
+        if (node.mapUnexplored.Contains("N") || node.mapWIP.Contains("N")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 up = new Vector3(node.position.x, node.position.y + (i * Globals.gridSize), 0);
@@ -145,7 +167,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.mapUnexplored.Contains("S")) {
+        if (node.mapUnexplored.Contains("S") || node.mapWIP.Contains("S")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 down = new Vector3(node.position.x, node.position.y - (i * Globals.gridSize), 0);
@@ -157,7 +179,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.mapUnexplored.Contains("W")) {
+        if (node.mapUnexplored.Contains("W") || node.mapWIP.Contains("W")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 left = new Vector3(node.position.x - (i * Globals.gridSize), node.position.y, 0);
@@ -169,7 +191,7 @@ public class MazeMapper : MonoBehaviour
                 }
             }
         }
-        if (node.mapUnexplored.Contains("E")) {
+        if (node.mapUnexplored.Contains("E") || node.mapWIP.Contains("E")) {
             for (int i = 1; i < maxDistance; i++)
             {
                 Vector3 right = new Vector3(node.position.x + (i * Globals.gridSize), node.position.y, 0);

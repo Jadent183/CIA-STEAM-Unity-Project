@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class Raycast : MonoBehaviour
 {
-
+    private Vector3 SnapToGrid(Vector3 pos)
+    {
+        return new Vector3(Mathf.Round(pos.x / Globals.gridSize) * Globals.gridSize, Mathf.Round(pos.y / Globals.gridSize) * Globals.gridSize, 0);
+    }
     // Line settings
     [Header("Line Settings")]
     [SerializeField] private float maxRayDistance = 50f;
@@ -25,6 +28,11 @@ public class Raycast : MonoBehaviour
     private static GameObject maze; // = GameObject.Find("10 by 10 orthogonal maze");
     private MazeMapper mazeMapper;// maze.GetComponent<MazeMapper>();
 
+    private bool paused = false;
+    private char input = ' ';
+    private float x;
+    private float y;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -70,23 +78,39 @@ public class Raycast : MonoBehaviour
     {
         CastRayToWalls();
         DrawLines();
-
-          if ((Mathf.Abs(transform.position.x) % Globals.gridSize < 0.25f || Mathf.Abs(transform.position.x) % Globals.gridSize > 0.75f) && (Mathf.Abs(transform.position.y) % Globals.gridSize < 0.25f || Mathf.Abs(transform.position.y) % Globals.gridSize > 0.75f))
+        if (Mathf.Abs(transform.position.x+transform.position.y-x-y) > .75) {
+            paused = false;
+        }
+        if ((Mathf.Abs(transform.position.x) % Globals.gridSize < 0.25f || Mathf.Abs(transform.position.x) % Globals.gridSize > 0.75f) && (Mathf.Abs(transform.position.y) % Globals.gridSize < 0.25f || Mathf.Abs(transform.position.y) % Globals.gridSize > 0.75f))
         {
-                if (hitTable["N"].hitDistance < Globals.wallThreshold && hitTable["S"].hitDistance < Globals.wallThreshold && hitTable["E"].hitDistance > Globals.wallThreshold && hitTable["W"].hitDistance > Globals.wallThreshold)
+            if (hitTable["N"].hitDistance < Globals.wallThreshold && hitTable["S"].hitDistance < Globals.wallThreshold && hitTable["E"].hitDistance > Globals.wallThreshold && hitTable["W"].hitDistance > Globals.wallThreshold)
             {
                 // Debug.Log("Invalid node position NS. " + gameObject.name);
+                paused = false;
                 return;
             } else if (hitTable["N"].hitDistance > Globals.wallThreshold && hitTable["S"].hitDistance > Globals.wallThreshold && hitTable["E"].hitDistance < Globals.wallThreshold && hitTable["W"].hitDistance < Globals.wallThreshold)
             {
                 // Debug.Log("Invalid node position EW." + gameObject.name);
+                paused = false;
+                return;
+            } else if (hitTable["E"].hitDistance > 49f)
+            { 
+                paused = false;
                 return;
             } else
             {
-                mazeMapper.AddNode(transform.position, hitTable, gameObject.name);
+                if (paused == false) {
+                    paused = true;
+                    
+                    transform.position = SnapToGrid(transform.position);
+                    x = transform.position.x;
+                    y = transform.position.y;
+                    string direction = gameObject.GetComponent<PlayerMovement>().getOppositeDirection();
+                    input = mazeMapper.AddNode(transform.position, hitTable, gameObject.name, direction);
+                    gameObject.GetComponent<PlayerMovement>().changeDirection(input);
+                }
             }
         } 
-
     }
 
     private void CastRayToWalls()
