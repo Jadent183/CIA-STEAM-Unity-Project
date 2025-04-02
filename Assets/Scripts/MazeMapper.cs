@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public static class Globals
 {
     public static float wallThreshold = 0.9f;
 
     public static float gridSize = 1f;
+    
 }
 
 public class DirectionalHit
@@ -36,6 +38,11 @@ public class MazeMapper : MonoBehaviour
 {   
     // Dictionary stores all nodes
     private Dictionary<Vector3, MapNode> nodes = new Dictionary<Vector3, MapNode>();
+
+    public MapNode getNode(Vector3 pos){
+        return nodes[pos];
+    }
+
     // Put the position into normalized grid
     private Vector3 SnapToGrid(Vector3 pos)
     {
@@ -123,6 +130,10 @@ public class MazeMapper : MonoBehaviour
         }
         catch {}
         nodes[position] = tempNode;
+
+
+        Debug.Log("Node: " + tempNode.nodeID + " Completed: " + tempNode.mapCompleted);
+
         return returnValue;
     }
 
@@ -150,16 +161,53 @@ public class MazeMapper : MonoBehaviour
    
 
     // Draw the nodes for visual aide
-    private void drawNodes(MapNode node) 
-    {
-        GameObject nodeObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        nodeObj.name = $"Node {node.nodeID}";
-        nodeObj.transform.position = node.position;
-        nodeObj.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        Renderer r = nodeObj.GetComponent<Renderer>();
-        r.material.color = Color.blue;
+    // private void drawNodes(MapNode node) 
+    // {
+    //     GameObject nodeObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //     nodeObj.name = $"Node {node.nodeID}";
+    //     nodeObj.transform.position = node.position;
+    //     nodeObj.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+    //     Renderer r = nodeObj.GetComponent<Renderer>();
+    //     r.material.color = Color.blue;
 
+    // }
+
+    private void drawNodes(MapNode node)
+{
+    GameObject nodeObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    nodeObj.name = $"Node {node.nodeID}";
+    nodeObj.transform.position = node.position;
+    nodeObj.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+    nodeObj.layer = LayerMask.NameToLayer("Default");
+    
+    Renderer r = nodeObj.GetComponent<Renderer>();
+    r.material.color = Color.blue;
+    
+    // Add collider if not already there
+    if (nodeObj.GetComponent<Collider>() == null)
+    {
+        nodeObj.AddComponent<SphereCollider>();
     }
+    
+    // Add EventSystem if it doesn't exist in the scene
+    if (FindObjectOfType<EventSystem>() == null)
+    {
+        GameObject eventSystem = new GameObject("EventSystem");
+        eventSystem.AddComponent<EventSystem>();
+        eventSystem.AddComponent<StandaloneInputModule>();
+    }
+    
+    // Add our tooltip component and set the node data
+    NodeTooltip tooltip = nodeObj.AddComponent<NodeTooltip>();
+    tooltip.SetNodeData(node);
+    
+    // Add Physics Raycaster to the camera if not already there
+    Camera mainCamera = Camera.main;
+    if (mainCamera != null && mainCamera.GetComponent<PhysicsRaycaster>() == null)
+    {
+        mainCamera.gameObject.AddComponent<PhysicsRaycaster>();
+    }
+}
 
     private void findNeighbors(MapNode node)
     {
