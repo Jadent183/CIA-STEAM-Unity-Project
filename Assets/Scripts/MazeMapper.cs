@@ -29,6 +29,7 @@ public struct MapNode
     public Vector3 position;
     public int nodeID;
     public List<MapNode> connections;
+    public Dictionary<string, string> nodeHistory;
 }
 
 public class MazeMapper : MonoBehaviour
@@ -68,6 +69,7 @@ public class MazeMapper : MonoBehaviour
             node.mapUnexplored = "";
             node.mapWIP = "";
             node.mapCompleted = "";
+            node.nodeHistory = new Dictionary<string, string>();
             foreach (KeyValuePair<string,DirectionalHit> kvp in hitTable) {
                 if (kvp.Value.hitDistance < Globals.wallThreshold) {
                     node.mapDeadEnd += kvp.Key;
@@ -92,27 +94,35 @@ public class MazeMapper : MonoBehaviour
             nodes.Add(node.position, node);
         }
         char returnValue = ' ';
+        MapNode tempNode = nodes[position];
+        try {
+            tempNode.nodeHistory.Add(name, "");
+        }
+        catch {}
         if (nodes[position].mapUnexplored.Length > 0) {
             returnValue = nodes[position].mapUnexplored[0];
-            MapNode tempNode = nodes[position];
             tempNode.mapUnexplored = tempNode.mapUnexplored.Substring(1);
             tempNode.mapWIP += returnValue;
-            nodes[position] = tempNode;
         }
         else if (nodes[position].mapWIP.Length > 0) {
             returnValue = nodes[position].mapWIP[0];
-            MapNode tempNode = nodes[position];
             tempNode.mapWIP = tempNode.mapWIP.Substring(1);
             tempNode.mapWIP += returnValue;
-            nodes[position] = tempNode;
         }
         else if (nodes[position].mapCompleted.Length > 0) {
             returnValue = nodes[position].mapCompleted[0];
-            MapNode tempNode = nodes[position];
             tempNode.mapCompleted = tempNode.mapCompleted.Substring(1);
             tempNode.mapCompleted += returnValue;
-            nodes[position] = tempNode;
         }
+        if (tempNode.nodeHistory[name].Contains(direction)) {
+            tempNode.mapCompleted += direction;
+            tempNode.mapWIP = tempNode.mapWIP.Replace(direction, String.Empty);
+        }
+        try {
+            tempNode.nodeHistory[name] += returnValue;
+        }
+        catch {}
+        nodes[position] = tempNode;
         return returnValue;
     }
 
