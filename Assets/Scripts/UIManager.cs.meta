@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 2e7e1ef473640d244931d5bb0ea4c08c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - slider: {instanceID: 0}
+  - addRoverButton: {instanceID: 0}
+  - playPauseButton: {instanceID: 0}
+  - resetGameButton: {instanceID: 0}
+  - sliderText: {instanceID: 0}
+  - roverPrefab: {fileID: 7417514053260167026, guid: fdcd0fa0cf79a354d96965d5c47d85ed, type: 3}
+  - spawnPoint: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

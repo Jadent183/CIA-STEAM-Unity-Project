@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
         // StartCoroutine(ExampleCoroutine());
     }
 
-    int moveSpeed = 5;
+    public int moveSpeed = 5;
     bool isCollision = false;
 
     //controls direction 
