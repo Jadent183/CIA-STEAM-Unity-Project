@@ -23,7 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
     int directionRight = 0;
     int directionUp = -1;
-
+    
     Vector3 vector = new Vector3( 0 , -1 , 0 );
 
     string oppositeDirection = "N";
@@ -32,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
             // Autonomous movement
-            if(Input.GetKey(KeyCode.Return)){
+            if(Input.GetKey(KeyCode.RightControl)){
                 transform.position += vector * moveSpeed * Time.deltaTime;
             }
 

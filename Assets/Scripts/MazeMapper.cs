@@ -44,7 +44,7 @@ public class MazeMapper : MonoBehaviour
     }
 
     // Put the position into normalized grid
-    private Vector3 SnapToGrid(Vector3 pos)
+    public Vector3 SnapToGrid(Vector3 pos)
     {
         return new Vector3(Mathf.Round(pos.x / Globals.gridSize) * Globals.gridSize, Mathf.Round(pos.y / Globals.gridSize) * Globals.gridSize, 0);
     }
