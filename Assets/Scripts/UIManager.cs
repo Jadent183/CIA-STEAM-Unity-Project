@@ -378,17 +378,19 @@ public class UIManager : MonoBehaviour
         }
     }
 
-
-
-    // different colors for different rovers
-    // Showing all paths that lead to the end
-    // Timer to show how long the maze is taking to complete
-
     /*
         TODO::::
 
             - Fix reset positions code (talk w/ gavin)
             - Fix rover collisions (talk w/ gavin)
+            - Implement maze switching (talk w/ ahmed)
+            - 
+
+        (smaller) TODO::::
+            
+            - Updated rover models/colors
+            - Maze completion timer
+            - Implementing stuff from "Toggles:" below
     */
 
     /* 
@@ -409,8 +411,4 @@ public class UIManager : MonoBehaviour
         - Show/hide entire mapped maze
         - Show/hide shortest path
     */
-
-
-
-
 }
