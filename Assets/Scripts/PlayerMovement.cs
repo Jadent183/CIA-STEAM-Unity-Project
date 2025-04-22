@@ -14,25 +14,30 @@ public class PlayerMovement : MonoBehaviour
     {
         // transform.Translate(2, 2, 0);
         // StartCoroutine(ExampleCoroutine());
+        uiManager = FindAnyObjectByType<UIManager>();
     }
 
     public int moveSpeed = 5;
     bool isCollision = false;
 
     //controls direction 
+    public bool isDriving = false;
 
     int directionRight = 0;
     int directionUp = -1;
     
     Vector3 vector = new Vector3( 0 , -1 , 0 );
+    private UIManager uiManager; 
 
     string oppositeDirection = "N";
     // Update is called once per frame
     void Update()
     {
-
-            // Autonomous movement
-            if(Input.GetKey(KeyCode.RightControl)){
+            if (Vector3.Distance(transform.position, uiManager.endPoint) < 0.5f) // use threshold if exact match isn't reliable
+            {
+                uiManager.OnRoverReachedEnd();
+            }            // Autonomous movement
+            if(Input.GetKey(KeyCode.RightControl) || isDriving){
                 transform.position += vector * moveSpeed * Time.deltaTime;
             }
 

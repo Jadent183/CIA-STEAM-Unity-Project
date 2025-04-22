@@ -27,8 +27,7 @@ public class NodeTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         
         // Hide tooltip initially
         ShowTooltip(false);
-
-        maze = GameObject.Find("10 by 10 orthogonal maze");
+        maze = GameObject.Find(Globals.mazeName);
         mazeMapper = maze.GetComponent<MazeMapper>();
     }
     

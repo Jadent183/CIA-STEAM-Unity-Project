@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,9 +9,10 @@ using UnityEngine.EventSystems;
 public static class Globals
 {
     public static float wallThreshold = 0.9f;
-
     public static float gridSize = 1f;
-    
+    public static string mazeName = "maze1";
+    public static float nodeAlpha = 0.0f;
+
 }
 
 public class DirectionalHit
@@ -37,7 +39,7 @@ public struct MapNode
 public class MazeMapper : MonoBehaviour
 {   
     // Dictionary stores all nodes
-    private Dictionary<Vector3, MapNode> nodes = new Dictionary<Vector3, MapNode>();
+    public Dictionary<Vector3, MapNode> nodes = new Dictionary<Vector3, MapNode>();
 
     public MapNode getNode(Vector3 pos){
         return nodes[pos];
@@ -60,7 +62,7 @@ public class MazeMapper : MonoBehaviour
     private int nodeID = 0;
 
     // Check for valid node position and add to dictionary
-    public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable, String name, string direction)
+public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable, String name, string direction)
     {
         // Check if postion is already in dictionary by position
         position = SnapToGrid(position);
@@ -81,19 +83,14 @@ public class MazeMapper : MonoBehaviour
                 if (kvp.Value.hitDistance < Globals.wallThreshold) {
                     node.mapDeadEnd += kvp.Key;
                 }
+                else if (kvp.Value.hitDistance > 20) {
+                    node.mapDeadEnd += kvp.Key;
+                }
                 else {
                     node.mapUnexplored += kvp.Key;
                 }
             }
-            if (node.mapUnexplored.Length + node.mapWIP.Length > 1) {
-                if (nodeID == 1) {
-                    node.mapDeadEnd += direction;
-                }
-                else {
-                    node.mapWIP += direction;
-                }
-                node.mapUnexplored = node.mapUnexplored.Replace(direction, String.Empty);
-            }
+            
             
             Debug.Log("Node Unexplored: " + node.mapUnexplored);
             Debug.Log("Node WIP: " + node.mapWIP);
@@ -102,22 +99,30 @@ public class MazeMapper : MonoBehaviour
         }
         char returnValue = ' ';
         MapNode tempNode = nodes[position];
+        if (tempNode.mapUnexplored.Length + tempNode.mapWIP.Length > 1) {
+            if (tempNode.mapUnexplored.Contains(direction) || tempNode.mapWIP.Contains(direction)) {
+                tempNode.mapWIP = tempNode.mapWIP.Replace(direction, String.Empty);
+                tempNode.mapWIP += direction;
+                tempNode.mapUnexplored = tempNode.mapUnexplored.Replace(direction, String.Empty);
+            }
+        }
         try {
             tempNode.nodeHistory.Add(name, "");
         }
         catch {}
-        if (nodes[position].mapUnexplored.Length > 0) {
-            returnValue = nodes[position].mapUnexplored[0];
+        
+        if (tempNode.mapUnexplored.Length > 0) {
+            returnValue = tempNode.mapUnexplored[0];
             tempNode.mapUnexplored = tempNode.mapUnexplored.Substring(1);
             tempNode.mapWIP += returnValue;
         }
-        else if (nodes[position].mapWIP.Length > 0) {
-            returnValue = nodes[position].mapWIP[0];
+        else if (tempNode.mapWIP.Length > 0) {
+            returnValue = tempNode.mapWIP[0];
             tempNode.mapWIP = tempNode.mapWIP.Substring(1);
             tempNode.mapWIP += returnValue;
         }
-        else if (nodes[position].mapCompleted.Length > 0) {
-            returnValue = nodes[position].mapCompleted[0];
+        else if (tempNode.mapCompleted.Length > 0) {
+            returnValue = tempNode.mapCompleted[0];
             tempNode.mapCompleted = tempNode.mapCompleted.Substring(1);
             tempNode.mapCompleted += returnValue;
         }
@@ -136,7 +141,6 @@ public class MazeMapper : MonoBehaviour
 
         return returnValue;
     }
-
     // Update is called once per frame
     void Update()
     {
@@ -177,11 +181,26 @@ public class MazeMapper : MonoBehaviour
     GameObject nodeObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
     nodeObj.name = $"Node {node.nodeID}";
     nodeObj.transform.position = node.position;
-    nodeObj.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+    nodeObj.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
     nodeObj.layer = LayerMask.NameToLayer("Default");
     
     Renderer r = nodeObj.GetComponent<Renderer>();
-    r.material.color = Color.blue;
+
+    // Set transparency-supporting shader mode
+    Material mat = r.material;
+    mat.shader = Shader.Find("Standard");
+    mat.SetFloat("_Mode", 3); // 3 = Transparent
+    mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+    mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+    mat.SetInt("_ZWrite", 0);
+    mat.DisableKeyword("_ALPHATEST_ON");
+    mat.EnableKeyword("_ALPHABLEND_ON");
+    mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+    mat.renderQueue = 3000;
+
+    Color color = new Color(0f, 0f, 1f, Globals.nodeAlpha); // Default alpha
+    mat.color = color;
+
     
     // Add collider if not already there
     if (nodeObj.GetComponent<Collider>() == null)

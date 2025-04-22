@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 
 
 public class Raycast : MonoBehaviour
@@ -11,11 +12,12 @@ public class Raycast : MonoBehaviour
     }
     // Line settings
     [Header("Line Settings")]
-    [SerializeField] private float maxRayDistance = 50f;
-    [SerializeField] private Color closeLineColor = Color.green;
-    [SerializeField] private Color farLineColor = Color.red;
-    [SerializeField] private float lineWidth = 0.1f;
+    [SerializeField] public float maxRayDistance = 50f;
+    [SerializeField] public Color closeLineColor = Color.green;
+    [SerializeField] public Color farLineColor = Color.red;
+    [SerializeField] public float lineWidth = 0.1f;
     // public float wallThreshold = 0.9f;
+    public float lineAlpha = 0f;
 
     private LayerMask wallLayer;
 
@@ -37,7 +39,8 @@ public class Raycast : MonoBehaviour
     void Start()
     {
         wallLayer = LayerMask.GetMask("MazeLayer");
-
+        farLineColor.a = lineAlpha;        
+        closeLineColor.a = lineAlpha;        
         // Initialize directional hits
         northHit = InitializeDirectionalHit("North");
         southHit = InitializeDirectionalHit("South");
@@ -48,9 +51,29 @@ public class Raycast : MonoBehaviour
         hitTable.Add("E",eastHit);
         hitTable.Add("W",westHit);
         
-        maze = GameObject.Find("10 by 10 orthogonal maze");
-        mazeMapper = maze.GetComponent<MazeMapper>();
+        // maze = GameObject.Find(Globals.mazeName); //CHANGE THIS TO DYNAMIC
+        // mazeMapper = maze.GetComponent<MazeMapper>();
+        StartCoroutine(WaitForMazeAndInit());
     }
+
+
+    IEnumerator WaitForMazeAndInit()
+    {
+        // Wait until the maze GameObject is present in the scene
+        while (GameObject.Find(Globals.mazeName) == null)
+        {
+            yield return null; // wait 1 frame
+        }
+
+        maze = GameObject.Find(Globals.mazeName);
+        mazeMapper = maze.GetComponent<MazeMapper>();
+
+        if (mazeMapper == null)
+        {
+            Debug.LogError("MazeMapper component missing on maze prefab.");
+        }
+    }
+
 
     private DirectionalHit InitializeDirectionalHit(string direction)
     {
@@ -93,7 +116,7 @@ public class Raycast : MonoBehaviour
                 // Debug.Log("Invalid node position EW." + gameObject.name);
                 paused = false;
                 return;
-            } else if (hitTable["E"].hitDistance > 49f)
+            } else if ((hitTable["E"].hitDistance > 49f || hitTable["W"].hitDistance > 49f) && (hitTable["N"].hitDistance > 49f || hitTable["S"].hitDistance > 49f))
             { 
                 paused = false;
                 return;
@@ -112,6 +135,8 @@ public class Raycast : MonoBehaviour
             }
         } 
     }
+
+
 
     private void CastRayToWalls()
     {
@@ -154,6 +179,8 @@ public class Raycast : MonoBehaviour
                 hit.hitDistance = rayHit.distance;
                 hit.contactPoint = rayHit.point;
                 hit.hasHit = true;
+                closeLineColor.a = lineAlpha;
+                farLineColor.a = lineAlpha;
                 if (rayHit.distance < Globals.wallThreshold)
                 {
                     hit.Line.startColor = closeLineColor;

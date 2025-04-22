@@ -101,6 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  isDriving: 0
 --- !u!50 &1121316069752684120
 Rigidbody2D:
   serializedVersion: 4
@@ -143,7 +144,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -189,3 +190,4 @@ MonoBehaviour:
   closeLineColor: {r: 0, g: 1, b: 0, a: 1}
   farLineColor: {r: 1, g: 0, b: 0, a: 1}
   lineWidth: 0.1
+  lineAlpha: 0
