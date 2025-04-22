@@ -77,7 +77,8 @@ public class UIManager : MonoBehaviour
     public Dictionary<string, (string type, Vector2 spawnPoint, Vector2 endPoint)> Mazes = new()
     {
         { "maze1", ("open", new Vector2(0.05f, 5f), new Vector2(1f, -5f)) },
-        { "10 by 10 orthogonal maze", ("closed", new Vector2(0.05f, 5f), new Vector2(1f, -5f)) },
+        { "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) },
+        { "maze2", ("open", new Vector2(0.25f, 4.81f), new Vector2(1f, -5f)) },
     };
 
     void Awake()
@@ -140,6 +141,7 @@ public class UIManager : MonoBehaviour
         Globals.mazeName = selectedMaze;
         mazeName = selectedMaze;
 
+
         if (currentMazeInstance != null)
             Destroy(currentMazeInstance);
 
@@ -160,6 +162,8 @@ public class UIManager : MonoBehaviour
         openMaze = status == "open";
         spawnPoint = spawn;
         endPoint = end;
+        ResetMap();
+        UpdateUIForMazeType();
 
         if (!openMaze)
         {
@@ -169,8 +173,7 @@ public class UIManager : MonoBehaviour
             if (activeEndMarker != null) Destroy(activeEndMarker);
         }
 
-        ResetMap();
-        UpdateUIForMazeType();
+
     }
 
     void UpdateUIForMazeType()
@@ -398,10 +401,13 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            timer = 0f;
-            timerRunning = true;
-            reachedEndpoint = false;
-            timerText.color = Color.white;
+            //timer = 0f;
+            if (!reachedEndpoint)
+            {
+                timerRunning = true;
+            }
+            //reachedEndpoint = false;
+            //timerText.color = Color.white;
             foreach (var rover in Rovers)
             {
                 rover.moveSpeed = int.Parse(sliderText.text);
@@ -412,6 +418,15 @@ public class UIManager : MonoBehaviour
 
     void ResetMap()
     {
+        // Timer
+        timer = 0f;
+        timerText.text = FormatTime(timer);
+        timerText.color = Color.white;
+        reachedEndpoint = false;
+        timerRunning = false;
+
+        // Simulation
+        isPlaying = false;
         DestroyAllNodes();
         DestroyAllPlayers();
     }

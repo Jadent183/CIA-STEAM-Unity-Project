@@ -1948,15 +1948,19 @@ MonoBehaviour:
   raycastsToggle: {fileID: 1654207766}
   mappedMazeToggle: {fileID: 2042819347}
   shortestPathToggle: {fileID: 1039675874}
+  timerText: {fileID: 948487572}
   mazePrefabs:
   - name: maze1
     prefab: {fileID: 9094074353327961883, guid: 3ab8207d4a99fdd4caaa3516ca98e63a, type: 3}
   - name: 10 by 10 orthogonal maze
     prefab: {fileID: 5489731182873708888, guid: 480a9f0daea356c48bfdb25db901fac3, type: 3}
+  - name: maze2
+    prefab: {fileID: 3975909604599111616, guid: 8ef995bcad7574aacb7590b30c18abcb, type: 3}
   openMaze: 0
   mazeName: 
   xMarkerPrefab: {fileID: 206302384}
   endMarkerPrefab: {fileID: 1431106534}
+  endPoint: {x: 0, y: 0}
   showingNodes: 0
   showingRaycasts: 0
   showingMappedMaze: 0
@@ -2447,7 +2451,7 @@ GameObject:
   - component: {fileID: 948487573}
   - component: {fileID: 948487572}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: TimerText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
