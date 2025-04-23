@@ -32,10 +32,13 @@ public class UIManager : MonoBehaviour
     public Toggle mappedMazeToggle;
     public Toggle shortestPathToggle;
 
-    // Timer
-    public TMP_Text timerText;
-    private float timer = 0f;
-    private bool timerRunning = false;
+    // Timers
+    public TMP_Text startToEndTimerText;
+    public TMP_Text mazeCompletionTimerText;
+    private float startToEndTimer = 0f;
+    private float mazeCompletionTimer = 0f;
+    private bool startToEndTimerRunning = false;
+    private bool mazeCompletionTimerRunning = false;
     private bool reachedEndpoint = false;
 
 
@@ -225,8 +228,6 @@ public class UIManager : MonoBehaviour
         activeXMarker = Instantiate(xMarkerPrefab, startPos, Quaternion.identity);
     }
 
-
-
     void StartPlacingEndPoint()
     {
         if (openMaze)
@@ -243,7 +244,6 @@ public class UIManager : MonoBehaviour
         Vector2 startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         activeEndMarker = Instantiate(endMarkerPrefab, startPos, Quaternion.identity);
     }
-
 
     void UpdateSpawnPointPlacement()
     {
@@ -299,13 +299,23 @@ public class UIManager : MonoBehaviour
     {
         UpdateSpawnPointPlacement();
         UpdateEndPointPlacement();
-        if (timerRunning && !reachedEndpoint)
+        CheckMazeCompleted();
+        UpdateTimers();
+    }
+
+    private void UpdateTimers()
+    {
+        if (startToEndTimerRunning && !reachedEndpoint)
         {
-            timer += Time.deltaTime;
-            timerText.text = FormatTime(timer);
+            startToEndTimer += Time.deltaTime;
+            startToEndTimerText.text = FormatTime(startToEndTimer);
         }
 
-
+        if (mazeCompletionTimerRunning && !Globals.mazeCompleted)
+        {
+            mazeCompletionTimer += Time.deltaTime;
+            mazeCompletionTimerText.text = FormatTime(mazeCompletionTimer);
+        }
     }
 
     private string FormatTime(float time)
@@ -316,17 +326,41 @@ public class UIManager : MonoBehaviour
         return $"{minutes:00}:{seconds:00}:{milliseconds:000}";
     }
 
-
     public void OnRoverReachedEnd()
     {
         if (!reachedEndpoint)
         {
-            timerRunning = false;
+            startToEndTimerRunning = false;
             reachedEndpoint = true;
-            timerText.color = Color.green;
+            startToEndTimerText.color = Color.green;
         }
     }
 
+    public void ResetTimers()
+    {
+        // Timer
+        startToEndTimer = 0f;
+        startToEndTimerText.text = FormatTime(startToEndTimer);
+        startToEndTimerText.color = Color.white;
+        reachedEndpoint = false;
+        startToEndTimerRunning = false;
+
+        mazeCompletionTimer = 0f;
+        mazeCompletionTimerText.text = FormatTime(startToEndTimer);
+        mazeCompletionTimerText.color = Color.white;
+        mazeCompletionTimerRunning = false;
+        Globals.mazeCompleted = false;
+    }
+
+    public void CheckMazeCompleted()
+    {
+        if (Globals.mazeCompleted)
+        {
+            mazeCompletionTimerRunning = false;
+            reachedEndpoint = true;
+            startToEndTimerText.color = Color.green;
+        }
+    }
 
 
     void ClearSpawnAndEndPoints()
@@ -393,7 +427,8 @@ public class UIManager : MonoBehaviour
 
         if (!isPlaying)
         {        
-            timerRunning = false;
+            startToEndTimerRunning = false;
+            mazeCompletionTimerRunning = false;
             foreach (var rover in Rovers)
             {
                 rover.isDriving = false;
@@ -401,13 +436,11 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            //timer = 0f;
             if (!reachedEndpoint)
             {
-                timerRunning = true;
+                startToEndTimerRunning = true;
+                mazeCompletionTimerRunning = true;
             }
-            //reachedEndpoint = false;
-            //timerText.color = Color.white;
             foreach (var rover in Rovers)
             {
                 rover.moveSpeed = int.Parse(sliderText.text);
@@ -419,11 +452,7 @@ public class UIManager : MonoBehaviour
     void ResetMap()
     {
         // Timer
-        timer = 0f;
-        timerText.text = FormatTime(timer);
-        timerText.color = Color.white;
-        reachedEndpoint = false;
-        timerRunning = false;
+        ResetTimers();
 
         // Simulation
         isPlaying = false;
@@ -513,15 +542,11 @@ public class UIManager : MonoBehaviour
         (smaller) TODO::::
             
             - Updated rover models/colors
-            - Maze completion timer
             - Implementing stuff from "Toggles:" below
     */
 
     /* 
     
-    User Generated Spawnpoint and Endpoint: (SPAWNPOINT DONE)
-        - Generated on a user click (used for starting maze, resetting positions)
-        - SnaptoGrid() -> Mazemapper.cs input: vector3 (clicks create a vector 2, just add a 0)
     
     UI Updates:
         - New rover models (different colors for multiple rovers)
@@ -530,8 +555,8 @@ public class UIManager : MonoBehaviour
         - Maze switching
 
     Toggles:
-        - Show/hide nodes
-        - Show/hide raycast lines
+        - Show/hide nodes (x)
+        - Show/hide raycast lines (x)
         - Show/hide entire mapped maze
         - Show/hide shortest path
     */

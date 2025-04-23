@@ -12,7 +12,7 @@ public static class Globals
     public static float gridSize = 1f;
     public static string mazeName = "maze1";
     public static float nodeAlpha = 0.0f;
-
+    public static bool mazeCompleted = false; 
 }
 
 public class DirectionalHit
@@ -68,7 +68,7 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         position = SnapToGrid(position);
         if (nodes.ContainsKey(position) != true)
         {
-            Debug.Log(name + ": Creating Node: " + position);
+            //Debug.Log(name + ": Creating Node: " + position);
             MapNode node = new MapNode();
             node.position = SnapToGrid(position);
             node.nodeID = nodeID;
@@ -92,8 +92,8 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
             }
             
             
-            Debug.Log("Node Unexplored: " + node.mapUnexplored);
-            Debug.Log("Node WIP: " + node.mapWIP);
+            //Debug.Log("Node Unexplored: " + node.mapUnexplored);
+            //Debug.Log("Node WIP: " + node.mapWIP);
             drawNodes(node);
             nodes.Add(node.position, node);
         }
@@ -136,8 +136,17 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         catch {}
         nodes[position] = tempNode;
 
+        if (tempNode.nodeID == 67)
+        {   
+            Debug.Log("--------------MAP COMPLETED--------------");
+        }
+        if (AreAllNodesCompleted()) // MAZE HAS BEEN COMPLETED
+        {
+            Debug.Log("MAZE COMPLETE");
+            Globals.mazeCompleted = true;
+        }
 
-        Debug.Log("Node: " + tempNode.nodeID + " Completed: " + tempNode.mapCompleted);
+        //Debug.Log("Node: " + tempNode.nodeID + " Completed: " + tempNode.mapCompleted);
 
         return returnValue;
     }
@@ -300,4 +309,21 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
             lr.enabled = true;
         }
     }
+
+
+    public bool AreAllNodesCompleted()
+    {
+        foreach (var node in nodes.Values)
+        {
+            if (node.mapWIP + node.mapUnexplored != "")
+            {
+                Debug.Log("Nodes are not finished: ID: " + node.nodeID + " Position: " + node.position);
+                //return false; //uncomment once this is working
+            }
+        }
+        return false; //remove once this is working
+        //return true; //uncomment once this is working
+    }
+
+
 }
