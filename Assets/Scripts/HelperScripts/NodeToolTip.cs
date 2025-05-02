@@ -81,7 +81,7 @@ public class NodeTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
 
         MapNode tempNode = mazeMapper.getNode(this.nodeData.position);
-        Debug.Log(tempNode.nodeID);
+        // Debug.Log(tempNode.nodeID);
 
         if (nodeData is MapNode node && tooltipText != null)
         {

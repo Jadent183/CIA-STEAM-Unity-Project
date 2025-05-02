@@ -481,7 +481,7 @@ public class UIManager : MonoBehaviour
 
         // TEMP 
 
-        mazeMapper.sendInstructions();
+        // mazeMapper.sendInstructions();
 
 
     }

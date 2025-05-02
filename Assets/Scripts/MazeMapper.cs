@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 using System.IO;
 using UnityEngine.Experimental.GlobalIllumination;
 using System.Linq.Expressions;
+using Unity.Mathematics;
 
 public static class Globals
 {
@@ -546,6 +547,11 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         for (int i = 0; i < pathPositions.Count - 1; i++) {
             CreatePathLine(pathPositions[i], pathPositions[i + 1]);
         }
+
+        if(IsMazeFullyMapped()){
+            Debug.Log("Starting sendInstructions");
+            sendInstructions(pathPositions);
+        }
         
         if (safetyCounter >= 1000) {
             Debug.LogError("Possible infinite loop in path finding. Path creation aborted.");
@@ -599,10 +605,102 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
     //     // return true;
     // }
 
-    public void sendInstructions()
+
+    public void sendInstructions(List<Vector3> pathPositions)
     {
-        string pathToFile = Application.persistentDataPath + "/directions.txt";
-        string directions = "rrlflf";
+        string directions = "";
+
+
+        string lastDirection = "E"; //Either North/South or East/West
+
+        // Movement options are foward,left,right
+        // Going from NS to EW means left/right change
+        // Going from EW to NS means left/right change
+
+        // if last direction E ()
+        for (int i = 0; i < pathPositions.Count - 1; i++) {
+            Vector3 start = pathPositions[i];
+            Vector3 end = pathPositions[i+1];
+            Vector3 posDiff = start-end;
+            // Debug.Log("Vector start: " + start);
+            // Debug.Log("Vector End: " + end);
+
+            Debug.Log("lastDirection: " + lastDirection + " Vector Diff: " + (start-end));
+            if(lastDirection.Equals("N")){
+                if(posDiff.x > 0){
+                    directions += "l";
+                    lastDirection = "W";
+                }
+                else if(posDiff.x < 0){
+                    directions += "r";
+                    lastDirection = "E";
+                }
+                else{
+                    directions += "f";
+                    lastDirection = "N";
+                }
+            }
+            else if(lastDirection.Equals("S")){
+                if(posDiff.x > 0){
+                    directions += "r";
+                    lastDirection = "W";
+                }
+                else if(posDiff.x < 0){
+                    directions += "l";
+                    lastDirection = "E";
+                }
+                else{
+                    directions += "f";
+                    lastDirection = "S";
+                }
+            }
+            else if(lastDirection.Equals("E")){
+                if(posDiff.y > 0){
+                    directions += "r";
+                    lastDirection = "S"; 
+                }
+                else if(posDiff.y < 0){
+                    directions += "l";
+                    lastDirection = "N";
+                }
+                else{
+                    directions += "f";
+                    lastDirection = "E";
+                }
+            }
+            else if(lastDirection.Equals("W")){
+                if(posDiff.y > 0){
+                    directions += "l";
+                    lastDirection = "S";
+                }
+                else if(posDiff.y < 0){
+                    directions += "r";
+                    lastDirection = "N";
+                }
+                else{
+                    directions += "f";
+                    lastDirection = "W";
+                }
+            }
+
+            if(math.abs((int)posDiff.x) > 1){
+                int mult = math.abs((int)posDiff.x);
+                for(int j = 1; j<mult;j++){
+                        directions += "f";
+                }
+            }else if(math.abs((int)posDiff.y) > 1){
+                int mult = math.abs((int)posDiff.y);
+                for(int j = 1; j<mult;j++){
+                        directions += "f";
+                }
+            }
+
+            Debug.Log("Turning: " + directions);
+        }
+        
+        Debug.Log("Directions is: " + directions);
+        string pathToFile = Application.persistentDataPath + "/directions.txt"; //Change this per user to a better hardcoded location (ETHAN)
+        string directions2 = "rrlflf";
 
         using (StreamWriter writer = new StreamWriter(pathToFile, false))
         {
@@ -610,6 +708,16 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         }
 
         Debug.Log(pathToFile);
+        return;
+    }
+
+
+    public void writeInstructions(Vector3 start, Vector3 end)
+    {
+        
+        Debug.Log("Vector start: " + start);
+        Debug.Log("Vector End: " + end);
+        
         return;
     }
 
