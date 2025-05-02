@@ -77,15 +77,15 @@ public class UIManager : MonoBehaviour
     public bool showingShortestPath = false;
 
     // Maze Dictionary
-    public Dictionary<string, (string type, Vector2 spawnPoint, Vector2 endPoint)> Mazes = new()
+    public Dictionary<string, (string type, Vector2 spawnPoint, Vector2 endPoint, int totalNodeCount)> Mazes = new()
     {
-        { "maze1", ("open", new Vector2(0.05f, 5f), new Vector2(1f, -5f)) },
-        { "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) },
-        { "maze2", ("open", new Vector2(0.25f, 4.81f), new Vector2(1f, -5f)) },
-        { "Maze4", ("open", new Vector2(0.05f, 5f), new Vector2(0.05f, -3f)) },
-        { "Maze5", ("closed", new Vector2(0,0), new Vector2(0,0)) },
-        { "MazePhysical", ("closed", new Vector2(-1f, 5f), new Vector2(-1f, -5f)) },
-        { "Maze1000", ("open", new Vector2(0.05f, 5f), new Vector2(2.74f, 1f)) },
+        { "maze1", ("open", new Vector2(0.05f, 4f), new Vector2(1f, -5f), 68) }, 
+        //{ "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) }, 
+        { "maze2", ("open", new Vector2(0.25f, 3.81f), new Vector2(1f, -5f), 70) }, 
+        { "Maze4", ("open", new Vector2(0.05f, 4f), new Vector2(0.05f, -3f), 18) }, 
+        { "Maze5", ("closed", new Vector2(0,0), new Vector2(0,0), 70) },            
+        //{ "MazePhysical", ("closed", new Vector2(-1f, 5f), new Vector2(-1f, -5f)) },
+        { "Maze1000", ("open", new Vector2(0.05f, 4f), new Vector2(2.74f, 1f), 12) }, 
     };
 
     void Awake()
@@ -126,7 +126,7 @@ public class UIManager : MonoBehaviour
             currentMazeInstance.name = mazeName;
             maze = currentMazeInstance;
             mazeMapper = maze.GetComponent<MazeMapper>();
-            var (status, spawn, end) = Mazes[mazeName];
+            var (status, spawn, end, nodeCount) = Mazes[mazeName];
             spawnPoint = spawn;
             endPoint = end;
         }
@@ -143,10 +143,12 @@ public class UIManager : MonoBehaviour
 
     void DropdownValueChanged(Dropdown change)
     {
+        ResetMap();
         string fullLabel = change.options[change.value].text;
         string selectedMaze = fullLabel.Substring(0, fullLabel.LastIndexOf(" ("));
         Globals.mazeName = selectedMaze;
         mazeName = selectedMaze;
+
 
 
         if (currentMazeInstance != null)
@@ -165,11 +167,11 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        var (status, spawn, end) = Mazes[selectedMaze];
+        var (status, spawn, end, nodeCount) = Mazes[selectedMaze];
+        Globals.expectedNodeCount = nodeCount; 
         openMaze = status == "open";
         spawnPoint = spawn;
         endPoint = end;
-        ResetMap();
         UpdateUIForMazeType();
 
         if (!openMaze)
@@ -362,7 +364,7 @@ public class UIManager : MonoBehaviour
         {
             mazeCompletionTimerRunning = false;
             reachedEndpoint = true;
-            startToEndTimerText.color = Color.green;
+            mazeCompletionTimerText.color = Color.green;
         }
     }
 
@@ -459,6 +461,14 @@ public class UIManager : MonoBehaviour
         ResetTimers();
 
         // Simulation
+        mappedMazeToggle.SetIsOnWithoutNotify(false);
+        Globals.showConnections = false;
+        mazeMapper.ClearPathLines();
+        mazeMapper.ClearConnections();
+        // Debug.Log("Resetting Map, Connections: " + Globals.showConnections);
+        // mazeMapper.UpdateConnectionsVisibility();
+        // Debug.Log("Done, Connections: " + Globals.showConnections);
+
         isPlaying = false;
         DestroyAllNodes();
         DestroyAllPlayers();
@@ -532,18 +542,36 @@ public class UIManager : MonoBehaviour
                 raycastComponent.lineAlpha = isOn ? 0.3f : 0.0f;
             }
         }
+
+        // TEMP TO CHECK MAP COMPLETION
+        Debug.Log("IS MAZE DONE?: " + mazeMapper.IsMazeFullyMapped());
+
     }
 
     void ToggleMappedMazeVisibility(bool isOn)
     {
         showingMappedMaze = isOn;
-        Debug.Log("Mapped Maze Toggled: " + isOn);
+        Globals.showConnections = isOn;
+        mazeMapper.UpdateConnectionsVisibility();
     }
 
     void ToggleShortestPathVisibility(bool isOn)
     {
         showingShortestPath = isOn;
         Debug.Log("Shortest Path Toggled: " + isOn);
+
+        if (showingShortestPath)
+        {
+            Vector3 spawnPoint3D = new Vector3(spawnPoint.x, spawnPoint.y, 0);
+            Vector3 endPoint3D = new Vector3(endPoint.x, endPoint.y, 0);
+
+            mazeMapper.FindAndDrawShortestPath(spawnPoint3D, endPoint3D);
+        }
+        else
+        {
+            mazeMapper.ClearPathLines();
+        }
+
     }
 }
 
