@@ -2093,6 +2093,14 @@ MonoBehaviour:
     prefab: {fileID: 5489731182873708888, guid: 480a9f0daea356c48bfdb25db901fac3, type: 3}
   - name: maze2
     prefab: {fileID: 3975909604599111616, guid: 8ef995bcad7574aacb7590b30c18abcb, type: 3}
+  - name: Maze4
+    prefab: {fileID: 943621800559691405, guid: 6f871aa54abc840b486d04c282c93468, type: 3}
+  - name: Maze5
+    prefab: {fileID: 7374045259327369309, guid: df911e90f79a34d6bb7038211a31a9a2, type: 3}
+  - name: MazePhysical
+    prefab: {fileID: 7579637342264035737, guid: 15b9894caf52f439d906526a3d6d7ed1, type: 3}
+  - name: Maze1000
+    prefab: {fileID: 6373890116186031065, guid: 4d89d8eded08b434e84bc9bd9f5bf631, type: 3}
   openMaze: 0
   mazeName: 
   xMarkerPrefab: {fileID: 206302384}

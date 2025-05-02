@@ -81,7 +81,11 @@ public class UIManager : MonoBehaviour
     {
         { "maze1", ("open", new Vector2(0.05f, 5f), new Vector2(1f, -5f)) },
         { "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) },
-        { "maze2", ("closed", new Vector2(0.25f, 4.81f), new Vector2(1f, -5f)) },
+        { "maze2", ("open", new Vector2(0.25f, 4.81f), new Vector2(1f, -5f)) },
+        { "Maze4", ("open", new Vector2(0.05f, 5f), new Vector2(0.05f, -3f)) },
+        { "Maze5", ("closed", new Vector2(0,0), new Vector2(0,0)) },
+        { "MazePhysical", ("closed", new Vector2(-1f, 5f), new Vector2(-1f, -5f)) },
+        { "Maze1000", ("open", new Vector2(0.05f, 5f), new Vector2(2.74f, 1f)) },
     };
 
     void Awake()
