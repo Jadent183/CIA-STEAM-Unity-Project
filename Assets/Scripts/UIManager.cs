@@ -80,12 +80,13 @@ public class UIManager : MonoBehaviour
     public Dictionary<string, (string type, Vector2 spawnPoint, Vector2 endPoint, int totalNodeCount)> Mazes = new()
     {
         { "maze1", ("open", new Vector2(0.05f, 4f), new Vector2(1f, -5f), 68) }, 
-        //{ "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) }, 
+        //{ "10 by 10 orthogonal maze", ("closed", new Vector2(-8f, -3f), new Vector2(-2f, -7f)) }, // ORIGINAL MAZE :) :)
         { "maze2", ("open", new Vector2(0.25f, 3.81f), new Vector2(1f, -5f), 70) }, 
         { "Maze4", ("open", new Vector2(0.05f, 4f), new Vector2(0.05f, -3f), 18) }, 
         { "Maze5", ("closed", new Vector2(0,0), new Vector2(0,0), 70) },            
-        //{ "MazePhysical", ("closed", new Vector2(-1f, 5f), new Vector2(-1f, -5f)) },
+        //{ "MazePhysical", ("closed", new Vector2(-1f, 5f), new Vector2(-1f, -5f)) }, // This one is old and dont use it anymore
         { "Maze1000", ("open", new Vector2(0.05f, 4f), new Vector2(2.74f, 1f), 12) }, 
+        //{ "MazePhysical", ("closed", new Vector2(0.05f, 4f), new Vector2(2.74f, 1f), 70) }, // This one is kinda buns with our algo
     };
 
     void Awake()
@@ -365,6 +366,10 @@ public class UIManager : MonoBehaviour
             mazeCompletionTimerRunning = false;
             reachedEndpoint = true;
             mazeCompletionTimerText.color = Color.green;
+
+            foreach (var rover in Rovers)
+                rover.moveSpeed = 0;
+
         }
     }
 

@@ -157,6 +157,7 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         {
             Debug.Log("MAZE COMPLETE");
             Globals.mazeCompleted = true;
+            
         }
 
         //Debug.Log("Node: " + tempNode.nodeID + " Completed: " + tempNode.mapCompleted);
