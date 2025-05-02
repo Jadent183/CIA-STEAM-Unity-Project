@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.IO;
 
 public static class Globals
 {
@@ -325,5 +326,18 @@ public char AddNode(Vector3 position, Dictionary<string,DirectionalHit> hitTable
         //return true; //uncomment once this is working
     }
 
+    public void sendInstructions()
+    {
+        string pathToFile = Application.persistentDataPath + "/directions.txt";
+        string directions = "rrlflf";
+
+        using (StreamWriter writer = new StreamWriter(pathToFile, false))
+        {
+            writer.WriteLine(directions);
+        }
+
+        Debug.Log(pathToFile);
+        return;
+    }
 
 }

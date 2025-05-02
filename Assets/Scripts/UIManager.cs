@@ -462,6 +462,13 @@ public class UIManager : MonoBehaviour
         isPlaying = false;
         DestroyAllNodes();
         DestroyAllPlayers();
+
+
+        // TEMP 
+
+        mazeMapper.sendInstructions();
+
+
     }
 
     void DestroyAllNodes()
